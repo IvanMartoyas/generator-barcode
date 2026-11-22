@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Генератор Barcode</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page">
+  <main class="page">
+    <h1 class="page__title">Генератор Barcode</h1>
+
+    <div class="card">
+      <div class="card__title">Настройки генерации</div>
+      
+      <div class="field">
+        <label class="field__label" for="shared-text">Текст для кодирования</label>
+        <textarea class="field__input" id="shared-text" placeholder="Введите данные для генерации..." rows="3"></textarea>
+      </div>
+
+      <div class="columns">
+        <div class="field">
+          <label class="field__label" for="barcode-type">Тип кода</label>
+          <select class="field__input" id="barcode-type">
+            <option value="CODE128">Code-128</option>
+            <option value="QR">QR Code</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label" for="barcode-size">Размер</label>
+          <select class="field__input" id="barcode-size">
+            <option value="s">Маленький</option>
+            <option value="m" selected>Средний</option>
+            <option value="l">Большой</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="preview" id="preview-area">
+        <div class="preview__canvas" id="barcode-canvas-container">
+          <p class="preview__placeholder" id="placeholder-text">Введите текст для генерации</p>
+        </div>
+      </div>
+
+      <button class="button" id="btn-print" style="background-color: #28a745; border: none;">Печать</button>
+    </div>
+  </main>
+
+  <!-- Исправленные пути к библиотекам -->
+  <script src="JsBarcode.all.min.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор Barcode</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .barcode-preview-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+      margin-bottom: 32px;
+    }
+    .preview__item {
+      text-align: center;
+    }
+    .preview__item h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .barcode-preview-container, .barcode-preview-container * {
+        visibility: visible;
+      }
+      .barcode-preview-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: block;
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+      }
+      .preview__item {
+        display: inline-block;
+        border: none;
+        margin: 10px;
+        width: 45%;
+        padding: 0;
+      }
+      .preview__item h3 {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="page__title">Генератор Barcode</h1>
+    
+    <div class="card">
+      <div class="card__title">Параметры генерации</div>
+      
+      <div class="field">
+        <label class="field__label" for="barcodeText">Текст / Данные</label>
+        <textarea id="barcodeText" class="field__input" rows="4" placeholder="Введите данные для кодирования..."></textarea>
+      </div>
+
+      <div class="columns" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="field">
+          <label class="field__label" for="barcodeType">Тип</label>
+          <select id="barcodeType" class="field__input">
+            <option value="CODE128">Code-128</option>
+            <option value="QR">QR Code</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label" for="barcodeSize">Размер</label>
+          <select id="barcodeSize" class="field__input">
+            <option value="s">Маленький</option>
+            <option value="m" selected>Средний</option>
+            <option value="l">Большой</option>
+          </select>
+        </div>
+        <div class="field" style="justify-content: flex-end;">
+          <button class="button" id="btnGenerate">Сгенерировать</button>
+        </div>
+      </div>
+
+      <div class="barcode-preview-container">
+        <div class="preview preview__item">
+          <h3>Code-128</h3>
+          <div class="preview__canvas" id="code128-container">
+            <canvas id="code128Canvas"></canvas>
+          </div>
+        </div>
+        <div class="preview preview__item">
+          <h3>QR Code</h3>
+          <div class="preview__canvas" id="qr-container">
+            <canvas id="qrCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <button class="button" id="btnPrint" style="background-color: #28a745; border: none; margin-top: 10px;">Печать</button>
+    </div>
+  </div>
+
+  <script src="node_modules/JsBarcode.all.min.js"></script>
+  <script src="node_modules/qrcode.min.js"></script>
+  
+  <script>
+    const barcodeText = document.getElementById('barcodeText');
+    const barcodeType = document.getElementById('barcodeType');
+    const barcodeSize = document.getElementById('barcodeSize');
+    const code128Canvas = document.getElementById('code128Canvas');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const btnPrint = document.getElementById('btnPrint');
+    const code128Container = document.getElementById('code128-container');
+    const qrContainer = document.getElementById('qr-container');
+
+    function generate() {
+      const text = barcodeText.value || "Sample Text";
+      const type = barcodeType.value;
+      const size = barcodeSize.value;
+
+      // Update classes for sizing
+      code128Container.classList.remove('barcode-size--s', 'barcode-size--m', 'barcode-size--l');
+      qrContainer.classList.remove('qr-size--s', 'qr-size--m', 'qr-size--l');
+      
+      code128Container.classList.add(`barcode-size--${size}`);
+      qrContainer.classList.add(`qr-size--${size}`);
+
+      if (type === "CODE128") {
+        JsBarcode(code128Canvas, text, {
+          format: "CODE128",
+          lineColor: "#000",
+          width: size === 's' ? 2 : size === 'm' ? 3 : 4,
+          height: size === 's' ? 120 : size === 'm' ? 200 : 300,
+          displayValue: true
+        });
+        // Clear QR
+        const ctx = qrCanvas.getContext('2d');
+        ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+      } else {
+        // Generate QR
+        QRCode.toCanvas(qrCanvas, text, {
+          width: size === 's' ? 160 : size === 'm' ? 220 : 300,
+          margin: 2,
+          errorCorrectionLevel: 'H'
+        }, function (error) {
+          if (error) console.error(error);
+        });
+        // Clear Code128
+        const ctx = code128Canvas.getContext('2d');
+        ctx.clearRect(0, 0, code128Canvas.width, code128Canvas.height);
+      }
+    }
+
+    btnGenerate.addEventListener('click', generate);
+    barcodeText.addEventListener('input', generate);
+    barcodeType.addEventListener('change', generate);
+    barcodeSize.addEventListener('change', generate);
+
+    btnPrint.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Initial generation
+    window.onload = generate;
+  </script>
+</body>
+</html>
