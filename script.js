@@ -44,66 +44,19 @@ function generate() {
       });
     } else if (type === "QR") {
       const dim = size === 's' ? 160 : size === 'm' ? 220 : 300;
-      currentCanvas = document.createElement('canvas');
-      currentCanvas.width = dim;
-      currentCanvas.height = dim;
-      currentCanvas.style.display = 'block';
-      currentCanvas.style.margin = '0 auto';
-      canvasContainer.appendChild(currentCanvas);
       
-      const ctx = currentCanvas.getContext('2d');
-
       if (typeof QRCode !== 'undefined') {
-        let success = false;
-
-        // Пытаемся метод 1: toCanvas
-        if (typeof QRCode.toCanvas === 'function') {
-          try {
-            QRCode.toCanvas(currentCanvas, text, {
-              width: dim,
-              height: dim,
-              margin: 2,
-              errorCorrectionLevel: QRCode.CorrectLevel.M
-            });
-            success = true;
-          } catch (e) { console.error("toCanvas failed", e); }
-        }
-
-        // Если не получилось, пробуем метод 2: toDataURL
-        if (!success && typeof QRCode.toDataURL === 'function') {
-          try {
-            const dataUrl = QRCode.toDataURL(text, {
-              errorCorrectionLevel: QRCode.CorrectLevel.M,
-              margin: 2,
-              width: dim,
-              height: dim
-            });
-            const img = new Image();
-            img.onload = function() {
-              ctx.drawImage(img, 0, 0);
-            };
-            img.src = dataUrl;
-            success = true;
-          } catch (e) { console.error("toDataURL failed", e); }
-        }
-
-        // Если не получилось, пробуем метод 3: Конструктор
-        if (!success) {
-          try {
-            new QRCode(currentCanvas, {
-              text: text,
-              width: dim,
-              height: dim,
-              margin: 2,
-              errorCorrectionLevel: QRCode.CorrectLevel.M
-            });
-            success = true;
-          } catch (e) { console.error("Constructor failed", e); }
-        }
-
-        if (!success) {
-          throw new Error("Не удалось отобразить QR-код. Возможно, библиотека qrcode.min.js повреждена или не поддерживает эти методы.");
-        }
+        // Используем конструктор QRCode. Он сам создаст canvas внутри контейнера.
+        new QRCode(canvasContainer, {
+          text: text,
+          width: dim,
+          height: dim,
+          margin: 2,
+          errorCorrectionLevel: QRCode.CorrectLevel.M
+        });
+        
+        // Находим созданный канвас для функции печати
+        currentCanvas = canvasContainer.querySelector('canvas') || canvasContainer.querySelector('img');
       } else {
         throw new Error("Библиотека QR Code не загружена. Проверьте путь в index.html");
       }
