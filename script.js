@@ -2,6 +2,7 @@ const sharedTextInput = document.getElementById('shared-text');
 const barcodeType = document.getElementById('barcode-type');
 const barcodeSize = document.getElementById('barcode-size');
 const btnPrint = document.getElementById('btn-print');
+const btnDownload = document.getElementById('btn-download');
 
 const previewArea = document.getElementById('preview-area');
 const canvasContainer = document.getElementById('barcode-canvas-container');
@@ -57,7 +58,6 @@ function generate() {
           errorCorrectionLevel: QRCode.CorrectLevel.M
         });
         
-        // Ждем отрисовки QR-кода
         setTimeout(() => {
           const generated = canvasContainer.querySelector('canvas') || canvasContainer.querySelector('img');
           if (generated) {
@@ -86,7 +86,45 @@ barcodeSize.addEventListener('change', generate);
 
 btnPrint.addEventListener('click', () => {
   if (currentCanvas) {
-    window.print();
+    const dataUrl = currentCanvas.tagName === 'IMG' ? currentCanvas.src : currentCanvas.toDataURL();
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Barcode</title>
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+              img { max-width: 100%; }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}" />
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    } else {
+      alert('Пожалуйста, разрешите всплывающие окна для работы печати.');
+    }
+  } else {
+    alert('Сначала введите данные для генерации');
+  }
+});
+
+btnDownload.addEventListener('click', () => {
+  if (currentCanvas) {
+    const dataUrl = currentCanvas.tagName === 'IMG' ? currentCanvas.src : currentCanvas.toDataURL();
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `barcode_${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   } else {
     alert('Сначала введите данные для генерации');
   }
